@@ -1,0 +1,21 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+<div id = "userSpace"></div>
+<div id="newPost">
+    <div class = "headline">● New Message ●</div>
+    <form id="postForm" style="text-align: center;">
+        <textarea id="postTextarea" placeholder="What do you want to share..."></textarea>
+        <div style="display: flex; align-items: center; justify-content: center;">
+        	<div class = "pearl"></div>
+        	<input type="submit" id="postSubmit" value="" style="width: 50px; height:50px; border-radius: 25px;margin:20px;"></input>
+        	<div class = "pearl"></div>
+        </div>
+    </form>
+</div>
+<div class = "headline" id = "postsHeadline"></div>
+<div id = "posts"></div>
+<div id = "pagination"></div>
+<script src="{% static 'network/index.js' %}"></script>
+{% endblock %}
