@@ -3,9 +3,9 @@
 
 {% block body %}
 <div id = "userSpace"></div>
-<div id="newPost">
+<div id = "newPost">
     <div class = "headline">● New Message ●</div>
-    <form id="postForm" style="text-align: center;">
+    <form style="text-align: center;">
         <textarea id="postTextarea" placeholder="What do you want to share..."></textarea>
         <div style="display: flex; align-items: center; justify-content: center;">
         	<div class = "pearl"></div>
@@ -15,7 +15,17 @@
     </form>
 </div>
 <div class = "headline" id = "postsHeadline"></div>
+<div style ="display:flex; justify-content: center;">
+	<div class = "pearl2"></div>
+	<div style="width: 370px;"></div>
+	<div class = "pearl2"></div>
+</div>
 <div id = "posts"></div>
+<div style ="display:flex; justify-content: center;">
+	<div class = "pearl2"></div>
+	<div style="width: 370px;"></div>
+	<div class = "pearl2"></div>
+</div>
 <div id = "pagination"></div>
 <script src="{% static 'network/index.js' %}"></script>
 {% endblock %}

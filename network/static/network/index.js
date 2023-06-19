@@ -1,11 +1,17 @@
+// TODO
+
+// USER LINK NOT WORKING ON ALL MESSAGES
+// NO NAV TRIGGER HIGHLIGHTING FOR OTHER USER
+
+
 function displayPosts(querySet)
 {
+	document.querySelector('#posts').innerHTML = "";
+	
 	let setLength = querySet.length;
 	if (querySet.length > postsPerPage) setLength = postsPerPage; // if postPerPage +1 === querySet.length
 	
-	document.querySelector('#posts').innerHTML = "";
-	
-	for(let x = 0; x < setLength; x++)
+	for (let x = 0; x < setLength; x++)
 	{		
 		const postFrame = document.createElement('div');
 		const userAndDate = document.createElement('div');
@@ -38,7 +44,7 @@ function displayPosts(querySet)
 				else like.innerHTML = "🤍";
 			})
 				
-			like.addEventListener('click', () =>
+			like.addEventListener('click', ()=>
 			{
 				fetch(`like/${querySet[x].id}?action=update`)
 				.then(response => response.json())
@@ -47,7 +53,7 @@ function displayPosts(querySet)
 					console.log(update.message);
 					if (!(update.message === "Like removed from DB" || update.message === "Like saved to DB"))
 					{
-						allPosts();
+						alert('Sorry. Server could not update the like.');
 						return;
 					}
 					
@@ -67,15 +73,19 @@ function displayPosts(querySet)
 			likeAndEdit.append(like);
 		}
 		
-		username.addEventListener('click', () => 
-		{
-			reset();
-			userSpace(querySet[x].user);
-		})
+		username.addEventListener('click', ()=> reset('user', querySet[x].user));
 		
 		userAndDate.append(username, date);
 		postFrame.append(userAndDate, content, likeAndEdit);
 		document.querySelector('#posts').append(postFrame);
+		postFrame.style.display = 'none';
+		setTimeout(()=>
+		{
+			postFrame.style.display = 'block';
+			postFrame.style.opacity = 0;
+			postFrame.animate([{opacity:0},{opacity:1}],333).onfinish = ()=> postFrame.style.opacity = 1;
+		},150*x)
+		
 		
 		if (loggedInUser === querySet[x].user)
 		{
@@ -100,23 +110,29 @@ function displayPosts(querySet)
 			})
 			saveChanges.addEventListener('click', ()=>
 			{
-				fetch(`/updatePost?post_id=${querySet[x].id}`,
+				if (textarea.value !== "")
 				{
-					method: 'PUT',
-					body: JSON.stringify
-					({ content: textarea.value.replaceAll("\n", "<br>") })
-				})
-				.then(response =>
-				{
-					// placed in the response section to make certian it's updated on the database by then, as textarea.value is passed back to the post.content directly (instead of fetching a GET from DB), for responsiveness.
-					querySet[x].content = textarea.value.replaceAll("\n", "<br>");
-					saveChanges.style.display = 'none';
-					textarea.style.display = 'none';
-					edit.style.display = 'block';
-					console.log(response);
-					if (200 >= response.status < 300) content.innerHTML = querySet[x].content;
-					else allPosts();
-				})
+					fetch(`/updatePost?post_id=${querySet[x].id}`,
+					{
+						method: 'PUT',
+						body: JSON.stringify
+						({ content: textarea.value.replaceAll("\n", "<br>") })
+					})
+					.then(response =>
+					{
+						saveChanges.style.display = 'none';
+						textarea.style.display = 'none';
+						edit.style.display = 'block';
+						console.log(response);
+						if (!(200 <= response.status < 300))
+						{
+							alert("Sorry. Server could not update the post.");
+							return;
+						}
+						querySet[x].content = textarea.value.replaceAll("\n", "<br>");
+						content.innerHTML = querySet[x].content;
+					})
+				}
 			})
 		}
 	}
@@ -124,20 +140,20 @@ function displayPosts(querySet)
 
 function userSpace(username)
 {
-	document.querySelector("#newPost").style.display = 'none';
-	document.querySelector	('#postsHeadline').innerHTML = `● ${username}'s Messages ●`;
-	const theSpace = document.querySelector('#userSpace');
-	theSpace.innerHTML	 = "";
-	theSpace.style = 'block';
+	document.querySelector('#postsHeadline').innerHTML = `● ${username}'s Messages ●`;
+	if (loggedInUser === username)
+	{	
+		document.querySelector	('#postsHeadline').innerHTML = '● Your Messages ●';
+		newPost();
+	}
 	
-	// so... python dictionary = exactly javascript object...
 	fetch('/userSpace/'+username)
 	.then(response => response.json())
 	.then(userSpace =>
 	{
 		if (userSpace.username === "Does not exist.")
 		{
-			theSpace.innerHTML	 = "The user "+username+" does not exist.";
+			document.querySelector('#postsHeadline').innerHTML = "The user "+username+" does not exist.";
 			return;
 		}
 		
@@ -145,14 +161,15 @@ function userSpace(username)
 		const userInfo = document.createElement('div');
  		const followers = document.createElement('div');
  		const following = document.createElement('div');
- 		theName.innerHTML = username;
- 		let followersAmount = userSpace.followers
+ 		if (username === loggedInUser) theName.innerHTML = username+" (You)";
+ 		else theName.innerHTML = username;
+ 		let followersAmount = userSpace.followers;
 		followers.innerHTML = "Followers: "+ followersAmount;
 		following.innerHTML = "Follows: "+ userSpace.following;
 		theName.id = "theName";
 		userInfo.classList.add("userSpaceBox");
 		userInfo.append(followers, following);
-		theSpace.append(theName, userInfo);
+		document.querySelector('#userSpace').append(theName, userInfo);
 	
 		if(isLoggedIn && loggedInUser	!== username)
 		{
@@ -173,7 +190,7 @@ function userSpace(username)
 			{
 				followState.innerHTML = "Currently not following.";
 				followTrigger.innerHTML = "Become a follower of "+username;
-				
+				followTrigger.style.color = '#886CE4';
 			}
 			followTrigger.addEventListener('click', ()=>
 			{
@@ -181,10 +198,18 @@ function userSpace(username)
 				{
 					followState.innerHTML = "Currently not following.";
 					followTrigger.innerHTML = "Become a follower of "+username;
+					followTrigger.style.color = '#886CE4';
 					followBool = false;
 					fetch('/follow/'+username)
-					.then(response => {
+					.then(response =>
+					{
 						console.log(response);
+						if (!(200 <= response.status < 300))
+						{
+							alert('Sorry. The server was not able to process your follow/unfollow request.')
+							reset('user', username);
+							return;
+						}
 						followersAmount--;
 						followers.innerHTML = "Followers: "+ followersAmount;
 					})
@@ -193,113 +218,40 @@ function userSpace(username)
 				{
 					followState.innerHTML = "You are a follower.";
 					followTrigger.innerHTML = "Stop following "+username;
+					followTrigger.style = null;
 					followBool = true;
 					fetch('/follow/'+username)
-					.then(response => {
-						console.log(response)
+					.then(response =>
+					{
+						console.log(response);
+						if (!(200 <= response.status < 300))
+						{
+							alert('Sorry. The server was not able to process your follow/unfollow request.')
+							reset('user', username);
+							return;
+						}
 						followersAmount++;
 						followers.innerHTML = "Followers: "+ followersAmount;
 					})
 				}
 			})
 			follow.append(followState, followTrigger);
-			theSpace.append(follow);
+			follow.style['background-color'] = 'white';
+			follow.style.color = '#002e3f';
+			document.querySelector('#userSpace').append(follow);
 		}
 	})
-	fetch(`/posterPosts/${username}?start=${startPage}&end=${endPage}`)
-	.then(response => response.json())
-	.then(incomingPosts =>
-	{
-		document.querySelector("#pagination").innerHTML = "";
-		if (startPage >= postsPerPage)	generatePreviousPage(userSpace, username);
-		if (incomingPosts.length === postsPerPage+1) generateNextPage(userSpace, username);
-		displayPosts(incomingPosts);
-	})
-	
-	if(loggedInUser === username)
-	{
-		newPost();
-		document.querySelector	('#postsHeadline').innerHTML = '● Your Messages ●';
-	}
-}
-
-function allPosts()
-{
-	document.querySelector('#userSpace').style.display = 'none';
-	document.querySelector	('#postsHeadline').innerHTML = '● All Messages ●'
-
-	fetch(`/allPosts?start=${startPage}&end=${endPage}`)
-	.then(response => response.json())
-	.then(incomingPosts =>
-	{
-		document.querySelector("#pagination").innerHTML = "";
-		if (startPage >= postsPerPage)	generatePreviousPage(allPosts);
-		if (incomingPosts.length == postsPerPage+1) generateNextPage(allPosts);
-		displayPosts(incomingPosts);
-	})
-	if(loggedInUser) newPost();
-}
-
-function followedPeoplePosts()
-{
-	document.querySelector('#posts').innerHTML = "";
-	document.querySelector('#userSpace').style.display = 'none';
-	
-	fetch(`/followedPeoplePosts?start=${startPage}&end=${endPage}`)
-	.then(response => response.json())
-	.then(incomingPosts =>
-	{
-		if (incomingPosts.message == undefined)
-		{
-			document.querySelector('#postsHeadline').innerHTML = "● Messages from the people you follow ●";
-			document.querySelector("#pagination").innerHTML = "";
-			if (startPage >= postsPerPage) generatePreviousPage(followedPeoplePosts);
-			if (incomingPosts.length == postsPerPage+1) generateNextPage(followedPeoplePosts);
-			displayPosts(incomingPosts);
-		}
-		else
-		{
-			document.querySelector("#pagination").innerHTML = "";
-			document.querySelector	('#postsHeadline').innerHTML = "You're currently not following anyone.";
-			console.log(incomingPosts.message);
-		}
-	})
-}
-
-function generateNextPage(theFunction, username)
-{
-	let nextPage = document.createElement('div');
-	nextPage.id = "nextPage";
-	nextPage.innerHTML = "Next Page";
-	document.querySelector("#pagination").append(nextPage);
-	nextPage.addEventListener('click', () =>
-	{
-		startPage += postsPerPage;
-		endPage = startPage+postsPerPage+1;
-		theFunction(username);
-	})
-}
-function generatePreviousPage(theFunction, username)
-{
-	let previousPage = document.createElement('div');
-	previousPage.id = "previousPage";
-	previousPage.innerHTML = "Previous Page";
-	document.querySelector("#pagination").append(previousPage);
-	previousPage.addEventListener('click', () =>
-	{
-		startPage -= postsPerPage;
-		endPage = startPage+postsPerPage+1;
-		theFunction(username);
-	})
+	posterPosts(username);
 }
 
 function newPost()
 {
-	document.querySelector("#newPost").style.display = 'block';
-	document.querySelector('#postTextarea').value = "";
+	document.querySelector('#newPost').style = null;
+	document.querySelector("#userSpace").style = null;
 	document.querySelector('form').onsubmit = () =>
 	{
     	let content = document.querySelector('#postTextarea').value;
+    	document.querySelector('#postTextarea').value = "";
     	if (content === "")
     	{
     		console.log('empty post. Returning.');
@@ -319,31 +271,123 @@ function newPost()
 			console.log(response);
 			startPage = 0;
 			endPage = postsPerPage+1;
-			allPosts();
+			posterPosts(loggedInUser);
 		})
 		return false;
 	}
 }
 
-document.querySelector('#following').addEventListener('click', () =>
+// PAGE GENERATION
+function allPosts()
 {
-	reset();
-	if (isLoggedIn) followedPeoplePosts();
-});
-document.querySelector('#usernameLink').addEventListener('click',() =>
-{
-	reset();
-	if (isLoggedIn) userSpace(loggedInUser);
-});
-document.querySelector('#allPosts').addEventListener('click', () =>
-{
-	reset();
-	if (isLoggedIn) document.querySelector("#newPost").style.display = 'block';
-	allPosts();
-});
+	document.querySelector	('#postsHeadline').innerHTML = '● All Messages ●'
 
-function reset()
+	fetch(`/allPosts?start=${startPage}&end=${endPage}`)
+	.then(response => response.json())
+	.then(incomingPosts =>
+	{
+		document.querySelector("#pagination").innerHTML = "";
+		if (startPage >= postsPerPage)	generatePreviousPage(allPosts);
+		if (incomingPosts.length == postsPerPage+1) generateNextPage(allPosts);
+		displayPosts(incomingPosts);
+	})
+}
+function posterPosts(username)
 {
+	fetch(`/posterPosts/${username}?start=${startPage}&end=${endPage}`)
+	.then(response => response.json())
+	.then(incomingPosts =>
+	{
+		document.querySelector("#pagination").innerHTML = "";
+		if (startPage >= postsPerPage)	generatePreviousPage(posterPosts, username);
+		if (incomingPosts.length === postsPerPage+1) generateNextPage(posterPosts, username);
+		displayPosts(incomingPosts);
+	})
+}
+function followedPeoplePosts()
+{
+	fetch(`/followedPeoplePosts?start=${startPage}&end=${endPage}`)
+	.then(response => response.json())
+	.then(incomingPosts =>
+	{
+		if (incomingPosts.message === undefined)
+		{
+			document.querySelector('#postsHeadline').innerHTML = "● Messages from the people you follow ●";
+			document.querySelector("#pagination").innerHTML = "";
+			if (startPage >= postsPerPage) generatePreviousPage(followedPeoplePosts);
+			if (incomingPosts.length === postsPerPage+1) generateNextPage(followedPeoplePosts);
+			displayPosts(incomingPosts);
+		}
+		else
+		{
+			document.querySelector("#pagination").innerHTML = "";
+			document.querySelector	('#postsHeadline').innerHTML = "You're currently not following anyone.";
+			console.log(incomingPosts.message);
+		}
+	})
+}
+function generateNextPage(theFunction, username)
+{
+	let nextPage = document.createElement('div');
+	nextPage.id = "nextPage";
+	nextPage.innerHTML = "Next Page";
+	document.querySelector("#pagination").append(nextPage);
+	nextPage.addEventListener('click', ()=>
+	{
+		startPage += postsPerPage;
+		endPage = startPage + postsPerPage+1;
+		theFunction(username);
+	})
+}
+function generatePreviousPage(theFunction, username)
+{
+	let previousPage = document.createElement('div');
+	previousPage.id = "previousPage";
+	previousPage.innerHTML = "Previous Page";
+	document.querySelector("#pagination").append(previousPage);
+	previousPage.addEventListener('click', () =>
+	{
+		startPage -= postsPerPage;
+		endPage = startPage+postsPerPage+1;
+		theFunction(username);
+	})
+}
+// END PAGE GENERATION
+
+// NAVIGATION, CONTENT RESET AND SCRIPT EXECUTION START
+document.querySelector('#allPosts').addEventListener('click', ()=>{reset('allPosts')});
+if (document.querySelector('#user') !== null) document.querySelector('#user').addEventListener('click', ()=>{reset('user', loggedInUser)}); // if not logged out
+if (document.querySelector('#following') !== null) document.querySelector('#following').addEventListener('click', ()=>{reset('following')});
+
+function reset(navTrigger, username)
+{
+	if (navTrigger !== 'following' && document.querySelector('#following') !== null) document.getElementById('following').style = null;
+	if (navTrigger !== 'user' && document.querySelector('#user') !== null) document.getElementById('user').style = null;
+	if (navTrigger !== 'allPosts') document.getElementById('allPosts').style = null;
+	document.getElementById(navTrigger).style['font-weight'] = 600;
+	document.getElementById(navTrigger).style.color = 'deepskyblue';
+	if (username !== undefined) // navTrigger = 'user'
+	{
+		if (username !== loggedInUser) document.getElementById('user').style = null;
+	}
+	
+	document.querySelector('#posts').innerHTML = "";
+	document.querySelector('#newPost').style.display = 'none';
+	startPage = 0;
+	endPage = postsPerPage+1;
+	
+	if (navTrigger === 'user')
+	{
+		// remember, setting JS-set styling to null puts the CSS BACK IN PLACE, making it visible (as in this script JS-set styling is used to make display = none).
+		const theSpace = document.querySelector('#userSpace');
+		theSpace.style = null;
+		theSpace.innerHTML	 = "";
+		userSpace(username);
+	}
+	else document.querySelector('#userSpace').style.display = 'none';
+	if (navTrigger === 'following' && isLoggedIn) followedPeoplePosts();
+	if (navTrigger === 'allPosts') allPosts();
+	
 	startPage = 0;
 	endPage = postsPerPage+1;
 }
@@ -354,6 +398,8 @@ var endPage = postsPerPage+1; // caution: python range ends BEFORE end, meaning 
 // Makes fetches call for 11 posts, with the eleventh one (if coming back / existing) triggering a next-page link-generation.
 var isLoggedIn = false;
 var loggedInUser = ""; // the name
+document.querySelector('#posts').innerHTML = "";
+document.querySelector('#newPost').style.display = 'none';
 
 window.onload= ()=>
 {
@@ -361,22 +407,11 @@ window.onload= ()=>
 	.then(response => response.json())
 	.then(userInfo =>
 	{
-		if (userInfo.isAnonymous === 'False')
-		{
-			isLoggedIn = true;
-			loggedInUser = userInfo.user;
-		}
-		else 
-		{
-			console.log("GOES HERE");
-			isLoggedIn = false;
-			loggedInUser = "";
-		}
+		isLoggedIn = !userInfo.isAnonymous;
+		if (isLoggedIn) loggedInUser = userInfo.user;
 				
 		console.log("username: "+loggedInUser);
 		console.log("is logged in?: "+isLoggedIn);
-		
-		document.querySelector("#newPost").style.display = 'none';
-		allPosts();
+		reset('allPosts');
 	});
 }

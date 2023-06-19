@@ -9,7 +9,10 @@ textarea{
 	height: 100px;
 	padding: 10px;
 	border-radius: 10px;
+	border-width: 0px;
+	outline: none;
 }
+
 
 input[type=submit] {
 	width: 100%;
@@ -28,50 +31,49 @@ a{
 	cursor: pointer;
 }
 
-#newPost{
+#newPost
+{
 	margin: auto;
 	margin-top: 20px;
 	border-radius: 20px;
 	width: 440px;
 	padding: 20px;
 }
-
-#userSpace{
+#userSpace
+{
+	justify-content: center;
+	margin: 20px;
 	text-align: center;
 	display: flex;
 	flex-wrap: wrap;
-	margin-top: 20px;
 }
-
-#theName{
+#theName
+{
 	margin-left: 20px;
 	font-size: 30px;
 	color: white;
 	border-radius: 10px;
 	padding: 20px;
-	background-color: deepskyblue;
+	background-color: #886CE4;
 }
-
 #followTrigger
 {
 	cursor: pointer;
 	color: deepskyblue;
 	font-weight: bold;
 }
-
-#posts{
-	
+#posts
+{	
 	margin: auto;
-	margin-top: 20px;
-	border-left: 5px solid deepskyblue;
-	border-right: 5px solid deepskyblue;
-	border-radius: 20px;
-	width: 440px;
+	border-left: 5px white solid;
+	border-right: 5px white solid;
+	width: 400px;
 	padding: 20px;
-	
+	padding-left: 10px;
+	padding-right: 10px;
 }
-
-#pagination{
+#pagination
+{
 	margin: auto;
 	display: flex;
 	flex-wrap: wrap;
@@ -80,27 +82,28 @@ a{
 	padding: 20px;
 	font-size: 20px;
 }
-
-#nextPage{
+#nextPage
+{
 	margin-left: auto;
 	margin-right: 0px;
 	cursor: pointer;
 }
-
-#previousPage{
+#previousPage
+{
 	cursor: pointer;
 }
 
+
+/* CLASSES */
 .userSpaceBox
 {
 	margin-left: 20px;
-	color: #002e3f;
+	color: white;
 	border-radius: 10px;
 	padding: 20px;
-	background-color: white;
-	text-align:left;
+	background-color: deepskyblue;
+	text-align: left;
 }
-
 .pearl
 {
 	width:20px;
@@ -108,16 +111,22 @@ a{
 	background-color:white;
 	border-radius:10px;
 }
-
+.pearl2
+{
+	width:26px;
+	height:26px;
+	background-color:white;
+	border-radius:10px;
+}
 .postFrame
 {
 	padding: 20px;
 	border-radius: 8px;
-	margin-bottom: 10px;
+	margin: 15px;
+	margin-top: 0px;
 	background-color: white;
 	color: #002e3f;
 }
-
 .userAndDate{
 	display: flex;
 	flex-wrap: wrap;
@@ -143,6 +152,7 @@ a{
 	background-color: deepskyblue;
 	color: white;
 	border-radius: 10px;
+	font-size: 17px;
 }
 .likeAndEdit
 {
@@ -162,11 +172,14 @@ a{
 	cursor: pointer;
 	color: deepskyblue;
 }
-
-
 .headline{
 	text-align: center;
 	font-size: 25px;
 	padding: 20px;
 	margin: auto;
+}
+.login
+{
+	width: 500px;
+	margin: 20px;
 }
