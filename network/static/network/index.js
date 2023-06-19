@@ -1,9 +1,3 @@
-// TODO
-
-// USER LINK NOT WORKING ON ALL MESSAGES
-// NO NAV TRIGGER HIGHLIGHTING FOR OTHER USER
-
-
 function displayPosts(querySet)
 {
 	document.querySelector('#posts').innerHTML = "";
@@ -83,8 +77,8 @@ function displayPosts(querySet)
 		{
 			postFrame.style.display = 'block';
 			postFrame.style.opacity = 0;
-			postFrame.animate([{opacity:0},{opacity:1}],333).onfinish = ()=> postFrame.style.opacity = 1;
-		},150*x)
+			postFrame.animate([{opacity:0},{opacity:1}],500).onfinish = ()=> postFrame.style.opacity = 1;
+		},200*x)
 		
 		
 		if (loggedInUser === querySet[x].user)
@@ -169,6 +163,7 @@ function userSpace(username)
 		theName.id = "theName";
 		userInfo.classList.add("userSpaceBox");
 		userInfo.append(followers, following);
+		const elements = [theName, userInfo]
 		document.querySelector('#userSpace').append(theName, userInfo);
 	
 		if(isLoggedIn && loggedInUser	!== username)
@@ -239,6 +234,18 @@ function userSpace(username)
 			follow.style['background-color'] = 'white';
 			follow.style.color = '#002e3f';
 			document.querySelector('#userSpace').append(follow);
+			elements.push(follow);
+		}
+
+		for (let x = 0; x < elements.length; x++)
+		{
+			elements[x].style.display = 'none';
+			setTimeout(()=>
+			{
+				elements[x].style.display = 'block';
+				elements[x].style.opacity = 0;
+				elements[x].animate([{opacity:0},{opacity:1}],500).onfinish = ()=> elements[x].style.opacity = 1;
+			},200*x)
 		}
 	})
 	posterPosts(username);
@@ -246,35 +253,61 @@ function userSpace(username)
 
 function newPost()
 {
-	document.querySelector('#newPost').style = null;
+	const newPostDiv = document.querySelector('#newPost');
+	newPostDiv.style = null;
+	newPostDiv.style.opacity = 0;
+	newPostDiv.animate([{opacity:0},{opacity:1}],1000).onfinish = ()=> newPostDiv.style.opacity = 1;
+	
 	document.querySelector("#userSpace").style = null;
 	document.querySelector('form').onsubmit = () =>
 	{
-    	let content = document.querySelector('#postTextarea').value;
-    	document.querySelector('#postTextarea').value = "";
-    	if (content === "")
-    	{
-    		console.log('empty post. Returning.');
-    		return false;
-    	}
-    	
-		fetch('/newPost',
-    	{
-			method: 'POST',
-			body: JSON.stringify
-			({
-				content: content,
-			})
-		})
-		.then(response =>
-		{
-			console.log(response);
-			startPage = 0;
-			endPage = postsPerPage+1;
-			posterPosts(loggedInUser);
-		})
+		addPost();
 		return false;
 	}
+}
+
+window.onkeydown = function(event) 
+{
+	const enterKey = 13;
+	const textArea = document.querySelector('#postTextarea');
+	let key = event.keyCode || event.which;
+	
+	if (textArea === document.activeElement)
+	{
+		if (event.shiftKey && enterKey === key) textArea.innerHTML = textArea.innerHTML + '\n';
+		else if (enterKey === key)
+		{
+			textArea.blur();
+			addPost();
+		} 
+	}
+}
+
+function addPost()
+{
+   	let content = document.querySelector('#postTextarea').value.trim(); // trim removes white spaces AND line breaks before and after the string. A "\n    Hi \n  " would become "Hi". By that also prevents empty strings (only spaces or / and line breaks).
+	document.querySelector('#postTextarea').value = "";
+	if (content === "")
+	{
+		console.log('empty post. Returning.');
+		return;
+	}
+	
+	fetch('/newPost',
+	{
+		method: 'POST',
+		body: JSON.stringify
+		({
+			content: content,
+		})
+	})
+	.then(response =>
+	{
+		console.log(response);
+		startPage = 0;
+		endPage = postsPerPage+1;
+		posterPosts(loggedInUser);
+	})
 }
 
 // PAGE GENERATION

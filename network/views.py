@@ -111,11 +111,7 @@ def followedPeoplePosts(request):
 def posterPosts(request, username):
 	start = int(request.GET.get("start"))
 	end = int(request.GET.get("end"))
-	print(start)
-	print(end)
-	print(username)
 	poster = User.objects.get(username = username)
-	print(poster)
 	return JsonResponse([eachOne.toJSON() for eachOne in getPosts([poster],start,end)], safe=False)
 
 @login_required	
