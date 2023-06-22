@@ -118,7 +118,7 @@ function displayPosts(querySet)
 						textarea.style.display = 'none';
 						edit.style.display = 'block';
 						console.log(response);
-						if (!(200 <= response.status < 300))
+						if (!(200 <= response.status && response.status < 300))
 						{
 							alert("Sorry. Server could not update the post.");
 							return;
@@ -199,7 +199,7 @@ function userSpace(username)
 					.then(response =>
 					{
 						console.log(response);
-						if (!(200 <= response.status < 300))
+						if (!(200 <= response.status && response.status < 300))
 						{
 							alert('Sorry. The server was not able to process your follow/unfollow request.')
 							reset('user', username);
@@ -219,7 +219,7 @@ function userSpace(username)
 					.then(response =>
 					{
 						console.log(response);
-						if (!(200 <= response.status < 300))
+						if (!(200 <= response.status && response.status < 300))
 						{
 							alert('Sorry. The server was not able to process your follow/unfollow request.')
 							reset('user', username);
