@@ -49,7 +49,6 @@ a{
 }
 #theName
 {
-	margin-left: 20px;
 	font-size: 30px;
 	color: white;
 	border-radius: 10px;
@@ -132,11 +131,10 @@ a{
 	flex-wrap: wrap;
 }
 .username{
-	font-family: "Crimson Pro";
-	font-weight: bold;
+	margin-top: -3px;
+	font-size: 18px;
+	font-weight: 500;
 	cursor: pointer;
-	font-size: 20px;
-	margin-top: -5px;
 }
 .date{
 	font-size: 15px;

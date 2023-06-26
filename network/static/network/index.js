@@ -5,6 +5,9 @@ function displayPosts(querySet)
 	let setLength = querySet.length;
 	if (querySet.length > postsPerPage) setLength = postsPerPage; // if postPerPage +1 === querySet.length
 	
+	if (setLength === 0) document.getElementById('verticalFrame').style.display = 'none';
+	else document.getElementById('verticalFrame').style.display = 'block';
+	
 	for (let x = 0; x < setLength; x++)
 	{		
 		const postFrame = document.createElement('div');
@@ -420,9 +423,6 @@ function reset(navTrigger, username)
 	else document.querySelector('#userSpace').style.display = 'none';
 	if (navTrigger === 'following' && isLoggedIn) followedPeoplePosts();
 	if (navTrigger === 'allPosts') allPosts();
-	
-	startPage = 0;
-	endPage = postsPerPage+1;
 }
 
 var postsPerPage = 10;
