@@ -32,7 +32,7 @@ function displayPosts(querySet)
 		{
 			const like = document.createElement('div');
 			like.classList.add("like");
-			fetch(`/like/${querySet[x].id}?action=read`)
+			fetch(`/network/like/${querySet[x].id}?action=read`)
 			.then(response => response.json())
 			.then(likeStatus =>
 			{
@@ -43,7 +43,7 @@ function displayPosts(querySet)
 				
 			like.addEventListener('click', ()=>
 			{
-				fetch(`like/${querySet[x].id}?action=update`)
+				fetch(`/network/like/${querySet[x].id}?action=update`)
 				.then(response => response.json())
 				.then(update =>
 				{
@@ -70,7 +70,7 @@ function displayPosts(querySet)
 			likeAndEdit.append(like);
 		}
 		
-		username.addEventListener('click', ()=> reset('user', querySet[x].user));
+		username.addEventListener('click', ()=>reset('user', querySet[x].user));
 		
 		userAndDate.append(username, date);
 		postFrame.append(userAndDate, content, likeAndEdit);
@@ -109,7 +109,7 @@ function displayPosts(querySet)
 			{
 				if (textarea.value !== "")
 				{
-					fetch(`/updatePost?post_id=${querySet[x].id}`,
+					fetch(`/network/updatePost?post_id=${querySet[x].id}`,
 					{
 						method: 'PUT',
 						body: JSON.stringify
@@ -144,7 +144,7 @@ function userSpace(username)
 		newPost();
 	}
 	
-	fetch('/userSpace/'+username)
+	fetch('/network/userSpace/'+username)
 	.then(response => response.json())
 	.then(userSpace =>
 	{
@@ -198,7 +198,7 @@ function userSpace(username)
 					followTrigger.innerHTML = "Become a follower of "+username;
 					followTrigger.style.color = '#886CE4';
 					followBool = false;
-					fetch('/follow/'+username)
+					fetch('/network/follow/'+username)
 					.then(response =>
 					{
 						console.log(response);
@@ -218,7 +218,7 @@ function userSpace(username)
 					followTrigger.innerHTML = "Stop following "+username;
 					followTrigger.style = null;
 					followBool = true;
-					fetch('/follow/'+username)
+					fetch('/network/follow/'+username)
 					.then(response =>
 					{
 						console.log(response);
@@ -296,7 +296,7 @@ function addPost()
 		return;
 	}
 	
-	fetch('/newPost',
+	fetch('/network/newPost',
 	{
 		method: 'POST',
 		body: JSON.stringify
@@ -318,19 +318,19 @@ function allPosts()
 {
 	document.querySelector	('#postsHeadline').innerHTML = '● All Messages ●'
 
-	fetch(`/allPosts?start=${startPage}&end=${endPage}`)
+	fetch(`/network/allPosts?start=${startPage}&end=${endPage}`)
 	.then(response => response.json())
 	.then(incomingPosts =>
 	{
 		document.querySelector("#pagination").innerHTML = "";
 		if (startPage >= postsPerPage)	generatePreviousPage(allPosts);
-		if (incomingPosts.length == postsPerPage+1) generateNextPage(allPosts);
+		if (incomingPosts.length === postsPerPage+1) generateNextPage(allPosts);
 		displayPosts(incomingPosts);
 	})
 }
 function posterPosts(username)
 {
-	fetch(`/posterPosts/${username}?start=${startPage}&end=${endPage}`)
+	fetch(`/network/posterPosts/${username}?start=${startPage}&end=${endPage}`)
 	.then(response => response.json())
 	.then(incomingPosts =>
 	{
@@ -342,7 +342,7 @@ function posterPosts(username)
 }
 function followedPeoplePosts()
 {
-	fetch(`/followedPeoplePosts?start=${startPage}&end=${endPage}`)
+	fetch(`/network/followedPeoplePosts?start=${startPage}&end=${endPage}`)
 	.then(response => response.json())
 	.then(incomingPosts =>
 	{
@@ -400,13 +400,7 @@ function reset(navTrigger, username)
 	if (navTrigger !== 'following' && document.querySelector('#following') !== null) document.getElementById('following').style = null;
 	if (navTrigger !== 'user' && document.querySelector('#user') !== null) document.getElementById('user').style = null;
 	if (navTrigger !== 'allPosts') document.getElementById('allPosts').style = null;
-	document.getElementById(navTrigger).style['font-weight'] = 600;
-	document.getElementById(navTrigger).style.color = 'deepskyblue';
-	if (username !== undefined) // navTrigger = 'user'
-	{
-		if (username !== loggedInUser) document.getElementById('user').style = null;
-	}
-	
+
 	document.querySelector('#posts').innerHTML = "";
 	document.querySelector('#newPost').style.display = 'none';
 	startPage = 0;
@@ -436,7 +430,7 @@ document.querySelector('#newPost').style.display = 'none';
 
 window.onload= ()=>
 {
-	fetch('/userInfo')
+	fetch('/network/userInfo')
 	.then(response => response.json())
 	.then(userInfo =>
 	{

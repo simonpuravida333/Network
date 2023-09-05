@@ -13,7 +13,7 @@
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-           <a class="nav-link" style="color:#002e3f; font-weight: 600;" href="{% url 'index' %}">NETWORK</a>
+           <a class="nav-link" style="color:#002e3f; font-weight: 600;" href="{% url 'network:index' %}">NETWORK</a>
             <div>
               <ul class="navbar-nav mr-auto">
                 {% if user.is_authenticated %}
@@ -22,21 +22,21 @@
                     </li>
                 {% endif %}
                 <li class="nav-item">
-                  <a class="nav-link" id = "allPosts">All Messages</a>
+                  <a class="nav-link" id = "allPosts" >All Messages</a>
                 </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" id = "following">Following</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                        <a class="nav-link" href="{% url 'network:logout' %}">Log Out</a>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                        <a class="nav-link" href="{% url 'network:login' %}">Log In</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        <a class="nav-link" href="{% url 'network:register' %}">Register</a>
                     </li>
                 {% endif %}
               </ul>
